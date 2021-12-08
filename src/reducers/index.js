@@ -1,5 +1,6 @@
-import { combineReducers } from "redux"
-import events from './events'
+import { combineReducers } from "redux";
+import { reducer as formReducer} from "redux-form";
+import events from './events';
 
-export default combineReducers({ events });
+export default combineReducers({ events, form: formReducer});
 // export default combineReducers({ foo, bar, baz})
