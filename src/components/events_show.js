@@ -3,12 +3,18 @@ import { connect } from 'react-redux';
 import { Field, reduxForm} from 'redux-form';
 import { Link } from 'react-router-dom';
 
-import { postEvent } from '../actions';
+import { getEvent, deleteEvent, putEvent } from '../actions';
 
-class EventsNew extends Component{
+class EventsShow extends Component{
   constructor(props) {
     super(props)
     this.onSubmit = this.onSubmit.bind(this)
+    this.onDeleteClick = this.onDeleteClick.bind(this)
+  }
+  
+  componentDidMount() {
+    const {id} = this.props.match.params
+    if (id) this.props.getEvent(id)
   }
 
   renderField(field) {
@@ -22,12 +28,18 @@ class EventsNew extends Component{
   }
   
   async onSubmit(values) {
-    await this.props.postEvent(values)
+    await this.props.putEvent(values)
     this.props.history.push('/')
- }
+  }
+  
+  async onDeleteClick() {
+    const { id } = this.props.match.params
+    await this.props.deleteEvent(id)
+    this.props.history.push('/')
+  }
 
   render() {
-    const {handleSubmit, pristine, submitting, invalid} = this.props
+    const {handleSubmit, pristine, submitting, invalid } = this.props
 
     return (
       <form onSubmit={handleSubmit(this.onSubmit)}>
@@ -38,6 +50,7 @@ class EventsNew extends Component{
         <div>
           <input type="submit" value="Submit" disabled={pristine || submitting || invalid} />
           <Link to="/">Cancel</Link>
+          <Link to="/" onClick={this.onDeleteClick}>Delete</Link>
         </div>
       </form>
     );
@@ -51,12 +64,20 @@ const validate = values => {
   if (!values.title) errors.title = "Enter a title, please.";
   if (!values.body) errors.body = "Enter a body, please.";
 
+  console.log(errors);
+
+  
   return errors;
 }
 
-// mapDispatchToProps: あるアクションが発生したときに、Reducerにタイプに応じた状態遷移を実行させるためのDispatch関数を引数に取る
-const mapDispatchToProps = ({ postEvent })
+const mapStateToProps = (state, ownProps) => {
+  const event = state.events[ownProps.match.params.id]
+  return { initialValues: event, state }
+}
 
-export default connect(null, mapDispatchToProps)(
-  reduxForm({ validate, form: 'event'})(EventsNew)
+// mapDispatchToProps: あるアクションが発生したときに、Reducerにタイプに応じた状態遷移を実行させるためのDispatch関数を引数に取る
+const mapDispatchToProps = ({ deleteEvent, getEvent, putEvent })
+
+export default connect(mapStateToProps, mapDispatchToProps)(
+  reduxForm({ validate, form: 'eventShowFrom', ebableReinitialize: true})(EventsShow)
 );
